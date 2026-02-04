@@ -24,7 +24,6 @@ import {
   getBarang
 } from '@/lib/services';
 import { Button } from '@/components/atoms/Button';
-import { SearchBar } from '@/components/molecules/SearchBar';
 import { PenjualanDetail } from '@/components/molecules/PenjualanDetail';
 import { PenjualanTable } from '@/components/organisms/PenjualanTable';
 import { PenjualanForm } from '@/components/organisms/PenjualanForm';
@@ -34,11 +33,9 @@ import { ItemPenjualanManager } from '@/components/organisms/ItemPenjualanManage
 
 export default function PenjualanPage() {
   const [penjualanList, setPenjualanList] = useState<Penjualan[]>([]);
-  const [filteredPenjualan, setFilteredPenjualan] = useState<Penjualan[]>([]);
   const [itemPenjualanList, setItemPenjualanList] = useState<ItemPenjualan[]>([]);
   const [pelangganList, setPelangganList] = useState<Pelanggan[]>([]);
   const [barangList, setBarangList] = useState<Barang[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showPenjualanForm, setShowPenjualanForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [editingPenjualan, setEditingPenjualan] = useState<Penjualan | undefined>();
@@ -53,14 +50,6 @@ export default function PenjualanPage() {
     fetchBarang();
   }, []);
 
-  useEffect(() => {
-    const filtered = Array.isArray(penjualanList) ? penjualanList.filter(penjualan =>
-      penjualan.id_nota.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      penjualan.kode_pelanggan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (penjualan.pelanggan?.nama || '').toLowerCase().includes(searchTerm.toLowerCase())
-    ) : [];
-    setFilteredPenjualan(filtered);
-  }, [penjualanList, searchTerm]);
 
   const fetchPenjualan = async () => {
     try {
@@ -226,6 +215,16 @@ export default function PenjualanPage() {
     setItemPenjualanList([]);
   };
 
+  const handleFormBack = () => {
+    setShowPenjualanForm(false);
+    setEditingPenjualan(undefined);
+  };
+
+  const handleItemFormBack = () => {
+    setShowItemForm(false);
+    setEditingItem(undefined);
+  };
+
   if (selectedPenjualan) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -261,6 +260,7 @@ export default function PenjualanPage() {
                   setShowItemForm(false);
                   setEditingItem(undefined);
                 }}
+                onBack={handleItemFormBack}
                 loading={loading}
               />
             ) : (
@@ -292,14 +292,7 @@ export default function PenjualanPage() {
 
         {!showPenjualanForm ? (
           <>
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="w-full sm:w-96">
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Cari berdasarkan nota atau pelanggan..."
-                />
-              </div>
+            <div className="mb-6 flex justify-end">
               <Button
                 onClick={handleCreatePenjualan}
                 disabled={loading}
@@ -315,7 +308,7 @@ export default function PenjualanPage() {
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <p className="mt-2 text-gray-600">Memuat data...</p>
                 </div>
-              ) : filteredPenjualan.length === 0 ? (
+              ) : penjualanList.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-gray-400 mb-4">
                     <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,23 +316,18 @@ export default function PenjualanPage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {searchTerm ? 'Tidak ada hasil pencarian' : 'Belum ada data penjualan'}
+                    Belum ada data penjualan
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    {searchTerm 
-                      ? 'Coba ubah kata kunci pencarian' 
-                      : 'Mulai dengan menambah penjualan baru'
-                    }
+                    Mulai dengan menambah penjualan baru
                   </p>
-                  {!searchTerm && (
-                    <Button onClick={handleCreatePenjualan}>
-                      Tambah Penjualan Pertama
-                    </Button>
-                  )}
+                  <Button onClick={handleCreatePenjualan}>
+                    Tambah Penjualan Pertama
+                  </Button>
                 </div>
               ) : (
                 <PenjualanTable
-                  data={filteredPenjualan}
+                  data={penjualanList}
                   onEdit={handleEditPenjualan}
                   onDelete={handleDeletePenjualan}
                   onViewItems={handleViewItems}
@@ -356,6 +344,7 @@ export default function PenjualanPage() {
               setShowPenjualanForm(false);
               setEditingPenjualan(undefined);
             }}
+            onBack={handleFormBack}
             loading={loading}
           />
         )}

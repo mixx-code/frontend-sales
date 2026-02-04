@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Pelanggan, CreatePelangganRequest, UpdatePelangganRequest } from '@/types';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
@@ -9,6 +10,7 @@ interface PelangganFormProps {
   pelanggan?: Pelanggan;
   onSubmit: (data: CreatePelangganRequest | UpdatePelangganRequest) => void;
   onCancel: () => void;
+  onBack?: () => void;
   loading?: boolean;
   className?: string;
 }
@@ -22,9 +24,11 @@ export const PelangganForm: React.FC<PelangganFormProps> = ({
   pelanggan,
   onSubmit,
   onCancel,
+  onBack,
   loading = false,
   className = '',
 }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     id_pelanggan: pelanggan?.id_pelanggan || '',
     nama: pelanggan?.nama || '',
@@ -125,6 +129,21 @@ export const PelangganForm: React.FC<PelangganFormProps> = ({
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                if (onBack) {
+                  onBack();
+                } else {
+                  router.push('/pelanggan');
+                }
+              }}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              ← Kembali
+            </Button>
             <Button
               type="submit"
               disabled={loading}

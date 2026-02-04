@@ -9,14 +9,11 @@ import {
   deleteBarang 
 } from '@/lib/services';
 import { Button } from '@/components/atoms/Button';
-import { SearchBar } from '@/components/molecules/SearchBar';
 import { BarangTable } from '@/components/organisms/BarangTable';
 import { BarangForm } from '@/components/organisms/BarangForm';
 
 export default function BarangPage() {
   const [barangList, setBarangList] = useState<Barang[]>([]);
-  const [filteredBarang, setFilteredBarang] = useState<Barang[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingBarang, setEditingBarang] = useState<Barang | undefined>();
   const [loading, setLoading] = useState(false);
@@ -26,14 +23,6 @@ export default function BarangPage() {
     fetchBarang();
   }, []);
 
-  useEffect(() => {
-    const filtered = Array.isArray(barangList) ? barangList.filter(barang =>
-      barang.kode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      barang.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      barang.kategori.toLowerCase().includes(searchTerm.toLowerCase())
-    ) : [];
-    setFilteredBarang(filtered);
-  }, [barangList, searchTerm]);
 
   const fetchBarang = async () => {
     try {
@@ -104,6 +93,11 @@ export default function BarangPage() {
     setEditingBarang(undefined);
   };
 
+  const handleFormBack = () => {
+    setShowForm(false);
+    setEditingBarang(undefined);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -120,14 +114,7 @@ export default function BarangPage() {
 
         {!showForm ? (
           <>
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="w-full sm:w-96">
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Cari berdasarkan kode, nama, atau kategori..."
-                />
-              </div>
+            <div className="mb-6 flex justify-end">
               <Button
                 onClick={handleCreate}
                 disabled={loading}
@@ -143,7 +130,7 @@ export default function BarangPage() {
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <p className="mt-2 text-gray-600">Memuat data...</p>
                 </div>
-              ) : filteredBarang.length === 0 ? (
+              ) : barangList.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-gray-400 mb-4">
                     <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,23 +138,18 @@ export default function BarangPage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {searchTerm ? 'Tidak ada hasil pencarian' : 'Belum ada data barang'}
+                    Belum ada data barang
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    {searchTerm 
-                      ? 'Coba ubah kata kunci pencarian' 
-                      : 'Mulai dengan menambah barang baru'
-                    }
+                    Mulai dengan menambah barang baru
                   </p>
-                  {!searchTerm && (
-                    <Button onClick={handleCreate}>
-                      Tambah Barang Pertama
-                    </Button>
-                  )}
+                  <Button onClick={handleCreate}>
+                    Tambah Barang Pertama
+                  </Button>
                 </div>
               ) : (
                 <BarangTable
-                  data={filteredBarang}
+                  data={barangList}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
@@ -179,6 +161,7 @@ export default function BarangPage() {
             barang={editingBarang}
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
+            onBack={handleFormBack}
             loading={loading}
           />
         )}

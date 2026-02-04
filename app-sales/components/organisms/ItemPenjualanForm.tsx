@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ItemPenjualan, CreateItemPenjualanRequest, UpdateItemPenjualanRequest, Barang } from '@/types';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
@@ -10,6 +11,7 @@ interface ItemPenjualanFormProps {
   nota: string;
   onSubmit: (data: CreateItemPenjualanRequest | UpdateItemPenjualanRequest) => void;
   onCancel: () => void;
+  onBack?: () => void;
   loading?: boolean;
   className?: string;
 }
@@ -20,9 +22,11 @@ export const ItemPenjualanForm: React.FC<ItemPenjualanFormProps> = ({
   nota,
   onSubmit,
   onCancel,
+  onBack,
   loading = false,
   className = '',
 }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     kode_barang: item?.kode_barang || '',
     qty: item?.qty || 1,
@@ -163,6 +167,21 @@ export const ItemPenjualanForm: React.FC<ItemPenjualanFormProps> = ({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                if (onBack) {
+                  onBack();
+                } else {
+                  router.push('/penjualan');
+                }
+              }}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              ← Kembali
+            </Button>
             <Button
               type="submit"
               disabled={loading || !selectedBarang}

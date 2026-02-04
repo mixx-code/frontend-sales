@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Barang, CreateBarangRequest, UpdateBarangRequest } from '@/types';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
@@ -8,6 +9,7 @@ interface BarangFormProps {
   barang?: Barang;
   onSubmit: (data: CreateBarangRequest | UpdateBarangRequest) => void;
   onCancel: () => void;
+  onBack?: () => void;
   loading?: boolean;
   className?: string;
 }
@@ -27,9 +29,11 @@ export const BarangForm: React.FC<BarangFormProps> = ({
   barang,
   onSubmit,
   onCancel,
+  onBack,
   loading = false,
   className = '',
 }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     kode: barang?.kode || '',
     nama: barang?.nama || '',
@@ -144,6 +148,21 @@ export const BarangForm: React.FC<BarangFormProps> = ({
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                if (onBack) {
+                  onBack();
+                } else {
+                  router.push('/barang');
+                }
+              }}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              ← Kembali
+            </Button>
             <Button
               type="submit"
               disabled={loading}

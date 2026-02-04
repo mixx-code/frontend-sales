@@ -9,14 +9,11 @@ import {
   deletePelanggan 
 } from '@/lib/services';
 import { Button } from '@/components/atoms/Button';
-import { SearchBar } from '@/components/molecules/SearchBar';
 import { PelangganTable } from '@/components/organisms/PelangganTable';
 import { PelangganForm } from '@/components/organisms/PelangganForm';
 
 export default function PelangganPage() {
   const [pelangganList, setPelangganList] = useState<Pelanggan[]>([]);
-  const [filteredPelanggan, setFilteredPelanggan] = useState<Pelanggan[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingPelanggan, setEditingPelanggan] = useState<Pelanggan | undefined>();
   const [loading, setLoading] = useState(false);
@@ -26,14 +23,6 @@ export default function PelangganPage() {
     fetchPelanggan();
   }, []);
 
-  useEffect(() => {
-    const filtered = Array.isArray(pelangganList) ? pelangganList.filter(pelanggan =>
-      pelanggan.id_pelanggan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pelanggan.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pelanggan.domisili.toLowerCase().includes(searchTerm.toLowerCase())
-    ) : [];
-    setFilteredPelanggan(filtered);
-  }, [pelangganList, searchTerm]);
 
   const fetchPelanggan = async () => {
     try {
@@ -104,6 +93,11 @@ export default function PelangganPage() {
     setEditingPelanggan(undefined);
   };
 
+  const handleFormBack = () => {
+    setShowForm(false);
+    setEditingPelanggan(undefined);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -120,14 +114,7 @@ export default function PelangganPage() {
 
         {!showForm ? (
           <>
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="w-full sm:w-96">
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Cari berdasarkan ID, nama, atau domisili..."
-                />
-              </div>
+            <div className="mb-6 flex justify-end">
               <Button
                 onClick={handleCreate}
                 disabled={loading}
@@ -143,7 +130,7 @@ export default function PelangganPage() {
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <p className="mt-2 text-gray-600">Memuat data...</p>
                 </div>
-              ) : filteredPelanggan.length === 0 ? (
+              ) : pelangganList.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-gray-400 mb-4">
                     <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,23 +138,18 @@ export default function PelangganPage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {searchTerm ? 'Tidak ada hasil pencarian' : 'Belum ada data pelanggan'}
+                    Belum ada data pelanggan
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    {searchTerm 
-                      ? 'Coba ubah kata kunci pencarian' 
-                      : 'Mulai dengan menambah pelanggan baru'
-                    }
+                    Mulai dengan menambah pelanggan baru
                   </p>
-                  {!searchTerm && (
-                    <Button onClick={handleCreate}>
-                      Tambah Pelanggan Pertama
-                    </Button>
-                  )}
+                  <Button onClick={handleCreate}>
+                    Tambah Pelanggan Pertama
+                  </Button>
                 </div>
               ) : (
                 <PelangganTable
-                  data={filteredPelanggan}
+                  data={pelangganList}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
@@ -179,6 +161,7 @@ export default function PelangganPage() {
             pelanggan={editingPelanggan}
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
+            onBack={handleFormBack}
             loading={loading}
           />
         )}
